@@ -1,103 +1,166 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+export default function FormPage() {
+  const router = useRouter();
+  const [question1, setQuestion1] = useState('');
+  const [question2, setQuestion2] = useState('');
+  const [keyMapping, setKeyMapping] = useState<{[key: string]: string}>({});
+  const [activeInput, setActiveInput] = useState<string>('');
+
+  // Original keys that will be scrambled
+  const originalKeys = [
+    'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
+    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
+    'z', 'x', 'c', 'v', 'b', 'n', 'm',
+    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    ' '
+  ];
+
+  // Shuffle the keys randomly
+  const shuffleKeys = () => {
+    const shuffled = [...originalKeys];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    const mapping: {[key: string]: string} = {};
+    originalKeys.forEach((key, index) => {
+      mapping[key] = shuffled[index];
+    });
+    
+    setKeyMapping(mapping);
+  };
+
+  // Shuffle keys on component mount and every 3 seconds
+  useEffect(() => {
+    shuffleKeys();
+    const interval = setInterval(shuffleKeys, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Handle keyboard input
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (activeInput === '') return;
+      
+      e.preventDefault();
+      const key = e.key.toLowerCase();
+      
+      if (key === 'backspace') {
+        if (activeInput === 'question1') {
+          setQuestion1(prev => prev.slice(0, -1));
+        } else if (activeInput === 'question2') {
+          setQuestion2(prev => prev.slice(0, -1));
+        }
+        return;
+      }
+      
+      if (keyMapping[key]) {
+        const mappedChar = keyMapping[key];
+        if (activeInput === 'question1') {
+          setQuestion1(prev => prev + mappedChar);
+        } else if (activeInput === 'question2') {
+          setQuestion2(prev => prev + mappedChar);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [keyMapping, activeInput]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (question1.trim() && question2.trim()) {
+      router.push('/slideshow');
+    }
+  };
+
+  // const renderKeyboard = () => {
+  //   const rows = [
+  //     ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+  //     ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
+  //     ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'],
+  //     ['z', 'x', 'c', 'v', 'b', 'n', 'm'],
+  //     [' ']
+  //   ];
+
+  //   return (
+  //     <div className="mt-8 p-4 bg-gray-100 rounded-lg">
+  //       <h3 className="text-lg font-semibold mb-4 text-center">Jumbled Keyboard</h3>
+  //       <p className="text-sm text-gray-600 mb-4 text-center">
+  //         Keys change every 3 seconds! Click on an input field above and start typing.
+  //       </p>
+  //       {rows.map((row, rowIndex) => (
+  //         <div key={rowIndex} className="flex justify-center mb-2 gap-1">
+  //           {row.map((key) => (
+  //             <div
+  //               key={key}
+  //               className="bg-white border-2 border-gray-300 rounded px-3 py-2 text-center min-w-[40px] font-mono text-sm"
+  //             >
+  //               <div className="text-gray-400 text-xs">{key === ' ' ? 'SPACE' : key.toUpperCase()}</div>
+  //               <div className="font-bold">
+  //                 {key === ' ' ? 'SPACE' : (keyMapping[key] || key).toUpperCase()}
+  //               </div>
+  //             </div>
+  //           ))}
+  //         </div>
+  //       ))}
+  //     </div>
+  //   );
+  // };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 p-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-4xl font-bold text-center mb-8 text-gray-800">
+          Most Important Day of Your Life
+        </h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-xl font-semibold mb-4 text-gray-700">
+              How often do you poop?
+            </label>
+            <input
+              type="text"
+              value={question1}
+              onFocus={() => setActiveInput('question1')}
+              onBlur={() => setActiveInput('')}
+              className="w-full p-4 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+              placeholder="Type Sincerely! Answer in a sentence"
+              readOnly
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          </div>
+
+          <div>
+            <label className="block text-xl font-semibold mb-4 text-gray-700">
+              Out of 10, how hard would you score your motion?
+            </label>
+            <input
+              type="text"
+              value={question2}
+              onFocus={() => setActiveInput('question2')}
+              onBlur={() => setActiveInput('')}
+              className="w-full p-4 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none bg-white text-gray-900"
+              placeholder="Type Sincerely"
+              readOnly
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={!question1.trim() || !question2.trim()}
+            className="w-full bg-blue-600 text-white text-xl font-semibold py-4 px-6 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            Submit
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
