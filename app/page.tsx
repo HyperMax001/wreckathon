@@ -17,6 +17,7 @@ export default function FormPage() {
 
   const SPOTLIGHT_RADIUS = 150;
 
+  // Move originalKeys outside component or make it static
   const originalKeys = [
     'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
     'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
@@ -25,7 +26,7 @@ export default function FormPage() {
     ' '
   ];
 
-  // useCallback ensures stable reference
+  // useCallback with empty dependency array since originalKeys is now stable
   const initializeKeyMapping = useCallback(() => {
     const mappedKeys = [
       '7', '3', '9', '1', '8', '0', '2', '5', '4', '6',
@@ -41,22 +42,22 @@ export default function FormPage() {
     });
 
     setKeyMapping(mapping);
-  }, [originalKeys]);
+  }, []); // Empty dependency array
 
-  const generateRandomPosition = () => {
+  const generateRandomPosition = useCallback(() => {
     const maxX = window.innerWidth - 450;
     const maxY = window.innerHeight - 350;
     setCardPosition({
       x: Math.random() * Math.max(maxX, 0),
       y: Math.random() * Math.max(maxY, 0)
     });
-  };
+  }, []);
 
-  // ✅ no missing dependency warning now
+  // Separate useEffect for initialization (runs only once)
   useEffect(() => {
     initializeKeyMapping();
     generateRandomPosition();
-  }, [initializeKeyMapping]);
+  }, []); // Empty dependency array - runs only once on mount
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
