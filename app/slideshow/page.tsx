@@ -1,140 +1,143 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
-export default function SlideshowPage() {
-  const router = useRouter();
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [isCardHovered, setIsCardHovered] = useState(false);
+export default function VideoScrubberPage() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const lastUpdateTime = useRef<number>(0);
+  
+  const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(0);
+  const [currentProgress, setCurrentProgress] = useState(0);
+  const [isInView, setIsInView] = useState(false);
 
-  // Sample images for the slideshow
-  const slides = [
-    {
-      src: '/slide1.jpg',
-      alt: 'Health and Wellness',
-      title: 'Your Health Matters'
-    },
-    {
-      src: '/slide2.jpg', 
-      alt: 'Medical Analysis',
-      title: 'Advanced Analysis'
-    },
-    {
-      src: '/slide3.jpg',
-      alt: 'Personalized Care',
-      title: 'Personalized Solutions'
+  // Configuration
+  const scrollHeight = '500vh'; // 5x viewport height for more gradual scrubbing
+  const frameRate = 30; // Reduced for better performance
+  const playbackRate = 1; // Normal playback speed
+
+  // Throttled scroll handler for better performance
+  const throttledUpdate = useCallback((callback: () => void) => {
+    const now = Date.now();
+    const frameInterval = 1000 / frameRate;
+    
+    if (now - lastUpdateTime.current >= frameInterval) {
+      callback();
+      lastUpdateTime.current = now;
     }
-  ];
+  }, [frameRate]);
 
-  // Auto-advance slideshow every 4 seconds
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
+    const video = videoRef.current;
+    const container = containerRef.current;
+    const scrollArea = scrollAreaRef.current;
+    
+    if (!video || !container || !scrollArea) return;
 
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
+    const handleLoadedData = () => {
+      setIsVideoLoaded(true);
+      const duration = video.duration;
+      setVideoDuration(duration);
+      video.currentTime = 0;
+    };
 
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  };
+    const handleScroll = () => {
+      throttledUpdate(() => {
+        if (!isVideoLoaded || videoDuration === 0) return;
 
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  };
+        const rect = scrollArea.getBoundingClientRect();
+        const windowHeight = window.innerHeight;
+        
+        // Calculate scroll progress with better sensitivity
+        let progress = 0;
+        
+        // More gradual scroll calculation
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const scrollAreaHeight = scrollArea.offsetHeight;
+        const maxScroll = scrollAreaHeight - windowHeight;
+        
+        if (maxScroll > 0) {
+          progress = Math.min(scrollTop / maxScroll, 1);
+        }
 
-  const handleCardClick = () => {
-    router.push('/final');
-  };
+        progress = Math.max(0, Math.min(1, progress));
+        setCurrentProgress(progress);
+        setIsInView(progress > 0 && progress < 1);
+        
+        // Update video time
+        const targetTime = progress * videoDuration * playbackRate;
+        const clampedTime = Math.max(0, Math.min(videoDuration, targetTime));
+        
+        if (Math.abs(video.currentTime - clampedTime) > 0.1) {
+          video.currentTime = clampedTime;
+        }
+      });
+    };
+
+    // Set up event listeners
+    video.addEventListener('loadeddata', handleLoadedData);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll, { passive: true });
+    
+    // Initial check
+    handleScroll();
+
+    return () => {
+      video.removeEventListener('loadeddata', handleLoadedData);
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [isVideoLoaded, videoDuration, playbackRate, throttledUpdate]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Slideshow Section */}
-      <div className="relative h-screen w-full overflow-hidden">
-        {slides.map((slide, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-0'
-            }`}
+    <div className="bg-black">
+      {/* Scroll area that creates the scrubbing effect */}
+      <div ref={scrollAreaRef} style={{ height: scrollHeight }}>
+        {/* Sticky video container */}
+        <div className="sticky top-0 h-screen">
+          <div 
+            ref={containerRef}
+            className="relative overflow-hidden h-full w-full"
           >
-            <div className="relative w-full h-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-              <div className="text-center text-white">
-                <h2 className="text-6xl font-bold mb-4">{slide.title}</h2>
-                <p className="text-xl opacity-80">Slide {index + 1} of {slides.length}</p>
-              </div>
-            </div>
-          </div>
-        ))}
-
-        {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all duration-200"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-
-        {/* Slide Indicators */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all duration-200 ${
-                index === currentSlide ? 'bg-white' : 'bg-white/50'
-              }`}
+            <video
+              ref={videoRef}
+              src="/01.mp4" // Video from public folder
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover"
+              style={{ 
+                pointerEvents: 'none',
+                display: isVideoLoaded ? 'block' : 'none' 
+              }}
             />
-          ))}
+            
+            {/* Loading state */}
+            {!isVideoLoaded && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black">
+                <div className="text-center text-white">
+                  <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-orange-400 mx-auto mb-4"></div>
+                  <p className="text-lg">Loading video experience...</p>
+                </div>
+              </div>
+            )}
+
+
+
+
+
+
+          </div>
         </div>
       </div>
-
-      {/* Service Card Section */}
-      <div className="py-20 px-8 bg-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-12 text-gray-800">Our Service</h2>
-          
-          <div className="flex justify-center">
-            <div
-              className={`bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 shadow-lg cursor-pointer transition-all duration-300 transform ${
-                isCardHovered ? 'scale-110 shadow-2xl' : 'scale-100'
-              }`}
-              onMouseEnter={() => setIsCardHovered(true)}
-              onMouseLeave={() => setIsCardHovered(false)}
-              onClick={handleCardClick}
-              style={{ maxWidth: '500px' }}
-            >
-              <div className="text-6xl mb-6">🏥</div>
-              <h3 className="text-2xl font-bold mb-4 text-gray-800">
-                Health Analysis Service
-              </h3>
-              <p className="text-gray-600 text-lg leading-relaxed">
-                We provide comprehensive health analysis based on your personal data. 
-                Our advanced algorithms help you understand your health patterns and 
-                provide personalized recommendations for better wellness.
-              </p>
-              <div className="mt-6">
-                <span className="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-semibold">
-                  Learn More →
-                </span>
-              </div>
-            </div>
-          </div>
+      
+      {/* End section */}
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center text-white">
+          <h2 className="text-4xl font-bold mb-4">Experience Complete</h2>
+          <p className="text-xl opacity-75">Thank you for scrolling through our video story</p>
         </div>
       </div>
     </div>
