@@ -49,7 +49,7 @@ export default function VideoScrubberPage() {
       throttledUpdate(() => {
         if (!isVideoLoaded || videoDuration === 0) return;
 
-        const rect = scrollArea.getBoundingClientRect();
+        // const rect = scrollArea.getBoundingClientRect();
         const windowHeight = window.innerHeight;
         
         // Calculate scroll progress with better sensitivity
