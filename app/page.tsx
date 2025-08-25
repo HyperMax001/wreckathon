@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 export default function FormPage() {
   const router = useRouter();
   const [question1, setQuestion1] = useState('');
+  const [question3, setQuestion3] = useState('');
   const [question2, setQuestion2] = useState('');
   const [keyMapping, setKeyMapping] = useState<{[key: string]: string}>({});
   const [activeInput, setActiveInput] = useState<string>('');
@@ -134,6 +135,8 @@ export default function FormPage() {
           setQuestion1(prev => prev + mappedChar);
         } else if (activeInput === 'question2') {
           setQuestion2(prev => prev + mappedChar);
+        }else if (activeInput === 'question3') {
+          setQuestion3(prev => prev + mappedChar);
         }
       }
     };
@@ -192,6 +195,20 @@ export default function FormPage() {
           </h1>
           
           <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+              <label className="block text-lg font-semibold mb-3 text-white">
+                Full Name
+              </label>
+              <input
+                type="text"
+                value={question3}
+                onFocus={() => handleInputFocus('question3')}
+                onBlur={handleInputBlur}
+                className="w-full p-3 text-base border-2 border-gray-300 rounded-lg focus:border-gray-300 focus:outline-none bg-white text-gray-900"
+                placeholder="Type Your Name"
+                readOnly
+              />
+            </div>
             <div>
               <label className="block text-lg font-semibold mb-3 text-white">
                 How often do you poop?
