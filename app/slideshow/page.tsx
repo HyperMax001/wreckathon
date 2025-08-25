@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
+import CleaningInteraction from '../components/CleaningInteraction';
 
 export default function VideoScrubberPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -12,6 +13,7 @@ export default function VideoScrubberPage() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [currentProgress, setCurrentProgress] = useState(0);
   const [isInView, setIsInView] = useState(false);
+  const [showCleaning, setShowCleaning] = useState(false);
 
   // Configuration
   const scrollHeight = '500vh'; // 5x viewport height for more gradual scrubbing
@@ -65,6 +67,11 @@ export default function VideoScrubberPage() {
         progress = Math.max(0, Math.min(1, progress));
         setCurrentProgress(progress);
         setIsInView(progress > 0 && progress < 1);
+        
+        // Trigger cleaning interaction when video reaches the end
+        if (progress >= 0.98 && !showCleaning) {
+          setShowCleaning(true);
+        }
         
         // Update video time
         const targetTime = progress * videoDuration * playbackRate;
@@ -129,17 +136,18 @@ export default function VideoScrubberPage() {
 
 
 
+            {/* Cleaning Interaction Component */}
+            <CleaningInteraction 
+              isActive={showCleaning} 
+              onComplete={() => {
+                console.log('Cleaning completed!');
+                // You can add navigation or other completion logic here
+              }} 
+            />
           </div>
         </div>
       </div>
-      
-      {/* End section */}
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-center text-white">
-          <h2 className="text-4xl font-bold mb-4">Experience Complete</h2>
-          <p className="text-xl opacity-75">Thank you for scrolling through our video story</p>
-        </div>
-      </div>
+
     </div>
   );
 }
