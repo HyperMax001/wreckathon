@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💩 Just Clap – Professional Poop Cleaning Service (Parody) 🚽
 
-## Getting Started
+Welcome to **Just Clap** – the internet’s first (and hopefully last) **Professional Poop Cleaning SaaS Platform™**.  
+Because why solve real problems when you can solve the ones nobody asked for?  
 
-First, run the development server:
+Built with ❤️ for **Wreckathon**, where absurdity meets code.  
 
+video Link Drive:
+---
+
+## 🌟 Features That Nobody Wanted
+
+- **Funny Signup & Onboarding**
+  - Answer *deeply personal* and *completely unnecessary* questions like:
+    - “How many times do you poop in a day?”  
+    - “What’s your usual poop color?”  
+  - Real keyboards? **Too mainstream.**  
+    We give you fake keyboards that make you cry while typing.  
+
+- **Interactive Poop-Cleaning Simulation**
+  - To unlock the platform, you must first **help an animated character**:
+    - Pull down their pants (don’t worry, it’s cartoonish… hopefully).  
+    - Scrub the poop away with your mouse like a true hero.  
+  - Only then will you be deemed worthy of our *sacred poop-cleaning services*.  
+
+- **Completely Useless, Totally Absurd**
+  - Perfectly mocks the seriousness of “real” SaaS apps.  
+  - This project will never raise VC funding (unless the investors are *really* weird).  
+
+---
+
+## 🛠️ Tech Stack
+- **Frontend:** Next.js (because why waste absurdity on plain HTML?)  
+- **Animations:** Over-the-top CSS/JS sorcery  
+- **Backend:** Who needs one? The poop cleans itself.  
+- **Database:** Your trauma.  
+
+---
+
+## 🚀 Getting Started (if you dare)
+
+Clone the repo:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+git clone https://github.com/HyperMax001/wreckathon.git
+cd wreckathon
